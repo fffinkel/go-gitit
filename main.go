@@ -11,7 +11,7 @@ func NYI() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-func main() {
+func registerHandlers() {
 	// Global actions
 	http.HandleFunc("/_activity", NYI())
 	http.HandleFunc("/_categories", NYI())
@@ -32,6 +32,11 @@ func main() {
 	http.HandleFunc("/_edit", NYI())
 	http.HandleFunc("/_history", NYI())
 	http.HandleFunc("/_showraw", NYI())
+
+}
+
+func main() {
+	registerHandlers()
 
 	log.Println("Listening on localhost:8081...")
 	log.Fatal(http.ListenAndServe("localhost:8001", nil))
