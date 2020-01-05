@@ -21,16 +21,14 @@ type gititError interface {
 }
 
 type gitBlob struct {
-	Timestamp time.Time
-	Hash      string
-	Contents  string
+	Hash     string
+	Contents string
 }
 
 func gitGetBlob(path string) (*gitBlob, error) {
 	blob := &gitBlob{
-		Timestamp: time.Now(),                                 // XXX STUB
-		Hash:      "1d9616855a130da2cd0665f79139f6d7853595b1", // XXX STUB
-		Contents:  "lorem ipsum\n",
+		Hash:     "1d9616855a130da2cd0665f79139f6d7853595b1", // XXX STUB
+		Contents: "lorem ipsum\n",
 	}
 
 	return blob, nil
@@ -67,7 +65,7 @@ func rootHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	http.ServeContent(w, req, "", blob.Timestamp, strings.NewReader(renderedMarkdown))
+	http.ServeContent(w, req, "", time.Now(), strings.NewReader(renderedMarkdown))
 }
 
 func registerHandlers() {
