@@ -112,7 +112,6 @@ func rootHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Add("ETag", blob.Hash)
 	renderedMarkdown, err := renderMarkdown(blob.Contents)
 	if err != nil {
 		log.Println(err.Error()) // XXX show this on a page in debug mode or something?
