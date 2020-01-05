@@ -3,6 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
+	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -25,10 +28,61 @@ type gitBlob struct {
 	Contents string
 }
 
+func gitInvoke(args ...string) (string, error) {
+	actualArgs := make([]string, 1, len(args)+1)
+	actualArgs[0] = "--git-dir=wikidata/.git"
+	actualArgs = append(actualArgs, args...)
+
+	cmd := exec.Command("git", actualArgs...)
+	env := []string{}
+
+	for _, envVar := range os.Environ() {
+		if strings.HasPrefix(envVar, "GIT_") {
+			continue
+		}
+
+		if strings.HasPrefix(envVar, "HOME=") {
+			continue
+		}
+
+		if strings.HasPrefix(envVar, "XDG_CONFIG_HOME=") {
+			continue
+		}
+
+		env = append(env, envVar)
+	}
+
+	env = append(env, "GIT_CONFIG_NOSYSTEM=1")
+
+	cmd.Env = env
+
+	output, err := cmd.Output()
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(output), nil
+}
+
+var whiteSpaceRE *regexp.Regexp = regexp.MustCompile(`\s+`)
+
 func gitGetBlob(path string) (*gitBlob, error) {
+	lsTreeOutput, err := gitInvoke("ls-tree", "HEAD", path+".page")
+	if err != nil {
+		return nil, err // XXX wrap?
+	}
+
+	blobHash := whiteSpaceRE.Split(strings.Split(strings.TrimSpace(lsTreeOutput), "\n")[0], -1)[2]
+
+	catFileOutput, err := gitInvoke("cat-file", "blob", blobHash)
+	if err != nil {
+		return nil, err // XXX wrap?
+	}
+
 	blob := &gitBlob{
-		Hash:     "1d9616855a130da2cd0665f79139f6d7853595b1", // XXX STUB
-		Contents: "lorem ipsum\n",
+		Hash:     blobHash,
+		Contents: catFileOutput,
 	}
 
 	return blob, nil
