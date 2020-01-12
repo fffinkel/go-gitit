@@ -67,10 +67,32 @@ func gitInvoke(args ...string) (string, error) {
 
 var whiteSpaceRE *regexp.Regexp = regexp.MustCompile(`\s+`)
 
+type noSuchBlobError struct {
+	path string
+}
+
+func (err *noSuchBlobError) Error() string {
+	return "no such blob: " + err.path
+}
+
+func (err *noSuchBlobError) StatusCode() int {
+	return http.StatusNotFound
+}
+
+func (err *noSuchBlobError) Status() string {
+	return "Not Found"
+}
+
+var _ gititError = &noSuchBlobError{} // make sure noSuchBlobError conforms to gititError interface
+
 func gitGetBlob(path string) (*gitBlob, error) {
 	lsTreeOutput, err := gitInvoke("ls-tree", "HEAD", path+".page")
 	if err != nil {
 		return nil, err // XXX wrap?
+	}
+
+	if lsTreeOutput == "" {
+		return nil, &noSuchBlobError{path: path}
 	}
 
 	blobHash := whiteSpaceRE.Split(strings.Split(strings.TrimSpace(lsTreeOutput), "\n")[0], -1)[2]
