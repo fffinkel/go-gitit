@@ -119,10 +119,10 @@ func renderMarkdown(markdown string) (string, error) {
 func rootHandler(w http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
 	if path == "/" {
-		path = "Front Page"
+		path = "/Front Page"
 	}
 
-	blob, err := gitGetBlob(path)
+	blob, err := gitGetBlob(":" + path)
 	if err != nil {
 		if appErr, ok := err.(gititError); ok {
 			// XXX write out an HTML page that shows the error message?
