@@ -70,6 +70,23 @@ func TestRoot200(t *testing.T) {
 	}
 }
 
+func TestMissing404(t *testing.T) {
+	state := setup()
+	defer state.teardown()
+
+	req, _ := http.NewRequest("GET", "/Missing", nil)
+	rr := httptest.NewRecorder()
+
+	http.DefaultServeMux.ServeHTTP(rr, req)
+
+	res := rr.Result()
+
+	if res.StatusCode != http.StatusNotFound {
+		fmt.Println(res.StatusCode)
+		t.Errorf("no dice")
+	}
+}
+
 func TestMain(m *testing.M) {
 	registerHandlers()
 
