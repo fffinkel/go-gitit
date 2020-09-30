@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -29,8 +30,9 @@ type gitBlob struct {
 }
 
 func gitInvoke(args ...string) (string, error) {
-	actualArgs := make([]string, 1, len(args)+1)
-	actualArgs[0] = "--git-dir=wikidata/.git"
+	actualArgs := make([]string, 2, len(args)+2)
+	actualArgs[0] = "-C"
+	actualArgs[1] = wikiDir
 	actualArgs = append(actualArgs, args...)
 
 	cmd := exec.Command("git", actualArgs...)
@@ -53,10 +55,12 @@ func gitInvoke(args ...string) (string, error) {
 	}
 
 	env = append(env, "GIT_CONFIG_NOSYSTEM=1")
+	env = append(env, "GIT_TRACE=1")
 
 	cmd.Env = env
 
-	output, err := cmd.Output()
+	output, err := cmd.CombinedOutput()
+	fmt.Printf("string(output) = %+v\n", string(output))
 
 	if err != nil {
 		return "", err
@@ -164,11 +168,13 @@ func registerHandlers() {
 	http.HandleFunc("/_history", NYI())
 	http.HandleFunc("/_showraw", NYI())
 
+	// playing around!
+	http.HandleFunc("/_init", InitHandler())
 }
 
 func main() {
 	registerHandlers()
 
 	log.Println("Listening on localhost:8001...")
-	log.Fatal(http.ListenAndServe("localhost:8001", nil))
+	log.Fatal(http.ListenAndServe(":8001", nil))
 }
